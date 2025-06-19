@@ -4,21 +4,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 const RippleContainer = ({ children }) => {
   const [ripples, setRipples] = useState([]);
   const containerRef = useRef(null);
-  const lastRippleTime = useRef(0);
-  const throttleDelay = 100;
 
-  const createRipple = useCallback((x, y) => {
+  const lastMouseMoveRippleTime = useRef(0);
+  const mouseMoveThrottleDelay = 5;
+
+  const createRipple = useCallback((x, y, isMouseMove = false) => {
     const now = Date.now();
-    if (now - lastRippleTime.current < throttleDelay) return;
 
-    const newRipple = { id: now, x, y };
-    lastRippleTime.current = now;
+    if (isMouseMove) {
+      if (now - lastMouseMoveRippleTime.current < mouseMoveThrottleDelay) {
+        return;
+      }
+      lastMouseMoveRippleTime.current = now;
+    }
 
-    setRipples((prevRipples) => [...prevRipples, newRipple]);
+    const newRipple = { id: now, x: x, y: y };
+    setRipples((prevRipples) => [...prevRipples, newRipple]); 
+
+    const rippleDuration = 1200;
 
     setTimeout(() => {
       setRipples((prevRipples) => prevRipples.filter((r) => r.id !== newRipple.id));
-    }, 800);
+    }, rippleDuration);
   }, []);
 
   const handleClick = (e) => {
@@ -26,7 +33,8 @@ const RippleContainer = ({ children }) => {
       const rect = containerRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      createRipple(x, y);
+      console.log('Click:', { clientX: e.clientX, clientY: e.clientY, rectLeft: rect.left, rectTop: rect.top, calculatedX: x, calculatedY: y });
+      createRipple(x, y, false);
     }
   };
 
@@ -35,14 +43,14 @@ const RippleContainer = ({ children }) => {
       const rect = containerRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      createRipple(x, y);
+      createRipple(x, y, true);
     }
   };
 
   return (
     <div
       ref={containerRef}
-      className="relative overflow-hidden"
+      className="relative overflow-hidden w-full h-full"
       onClick={handleClick}
       onMouseMove={handleMouseMove}
     >
@@ -52,17 +60,17 @@ const RippleContainer = ({ children }) => {
         {ripples.map((ripple) => (
           <motion.div
             key={ripple.id}
-            className="absolute h-24 w-24 rounded-full pointer-events-none z-50"
+            className="absolute h-64 w-64 rounded-full pointer-events-none z-50" 
             style={{
               left: ripple.x,
               top: ripple.y,
-              transform: 'translate(-50%, -50%)', // Center the ripple at the mouse position
-              background: 'radial-gradient(circle, rgba(139,92,246,0.2) 0%, rgba(139,92,246,0.1) 50%, rgba(139,92,246,0) 70%)',
+              transform: 'translate(-50%, -50%)',
+              background: 'radial-gradient(circle, rgba(119, 73, 222, 0.1) 0%, rgba(119, 73, 222, 0.03) 50%, rgba(119, 73, 222, 0) 100%)',
             }}
-            initial={{ opacity: 0.8, scale: 0 }}
-            animate={{ opacity: 0, scale: 3 }}
+            initial={{ opacity: 1, scale: 0 }}
+            animate={{ opacity: 0, scale: 1.5 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            transition={{ duration: 1.2, ease: [0.1, 0.8, 0.2, 1] }}
           />
         ))}
       </AnimatePresence>
