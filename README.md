@@ -26,8 +26,7 @@ Participants were given high-resolution assets and tasked with building a respon
 
 ## Deployment
 
-- The site is deployed on [Vercel / Netlify / etc.] (Insert your deployed link here)
-- Public GitHub repo: (Insert your GitHub repo link here)
+- The site is deployed on [Vercel / Netlify / etc.] https://frontend-battles.vercel.app/
 
 ## No License
 
